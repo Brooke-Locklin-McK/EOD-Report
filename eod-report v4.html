@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>McKinstry — End of Day Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #1C3665;
+    --navy-light: #2a4d8f;
+    --navy-bg: #eef2f8;
+    --accent: #1C3665;
+    --border: #ccd4e0;
+    --text: #1a1a1a;
+    --muted: #555;
+    --white: #fff;
+    --bg: #f2f4f8;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); min-height: 100vh; padding: 0 0 3rem 0; color: var(--text); font-size: 15px; }
+  /* Header */
+  .site-header { background: var(--navy); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+  .site-header img { height: 52px; background: transparent; display: block; }
+  .site-header h1 { color: #fff; font-size: 18px; font-weight: 600; letter-spacing: 0.02em; }
+  .page { max-width: 740px; margin: 0 auto; padding: 1.5rem 1rem 0; }
+
+  /* Date + Site row */
+  .meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin-bottom: 1.5rem; }
+  .meta-row label { font-size: 14px; color: var(--muted); white-space: nowrap; font-weight: 500; }
+  .meta-row input[type="date"] { font-size: 14px; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--white); color: var(--text); font-family: inherit; outline: none; }
+  .meta-row input[type="date"]:focus { border-color: var(--navy); }
+  .site-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+  .site-tag { font-size: 13px; font-weight: 700; padding: 6px 16px; border-radius: 20px; border: 1.5px solid var(--border); cursor: pointer; background: var(--white); color: var(--muted); transition: all 0.12s; user-select: none; letter-spacing: 0.06em; }
+  .site-tag:hover { border-color: var(--navy); color: var(--navy); }
+  .site-tag.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  /* Cards */
+  .card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem 1.5rem; margin-bottom: 1rem; }
+  .card-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--white); background: var(--navy); border-radius: 6px;
+    padding: 5px 12px; margin-bottom: 16px; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .card-title .num { font-size: 12px; font-weight: 800; background: rgba(255,255,255,0.25); border-radius: 4px; padding: 1px 7px; }
+
+  /* Fields */
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  label.fl { font-size: 13px; color: var(--muted); display: block; margin-bottom: 5px; font-weight: 500; }
+  input[type="text"], textarea {
+    width: 100%; font-size: 15px; padding: 9px 12px; border: 1.5px solid var(--border);
+    border-radius: 8px; background: #fafbfc; color: var(--text);
+    font-family: inherit; outline: none; transition: border-color 0.15s;
+  }
+  input[type="text"]:focus, textarea:focus { border-color: var(--navy); background: var(--white); }
+  textarea { resize: vertical; min-height: 70px; line-height: 1.6; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* Add row */
+  .add-row { display: flex; gap: 8px; }
+  .add-row input { flex: 1; }
+  .btn-sm { padding: 9px 16px; font-size: 14px; border: 1.5px solid var(--navy); border-radius: 8px; background: var(--white); cursor: pointer; white-space: nowrap; font-family: inherit; color: var(--navy); font-weight: 600; transition: background 0.1s; }
+  .btn-sm:hover { background: var(--navy-bg); }
+
+  /* Chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+  .chip { font-size: 13px; padding: 5px 12px; border-radius: 20px; background: var(--navy-bg); border: 1px solid var(--border); display: flex; align-items: center; gap: 6px; color: var(--navy); font-weight: 500; }
+  .chip button { background: none; border: none; cursor: pointer; color: #999; font-size: 16px; line-height: 1; padding: 0; }
+  .chip button:hover { color: var(--navy); }
+
+  /* Counter */
+  .counter { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+  .counter button { width: 34px; height: 34px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--white); cursor: pointer; font-size: 20px; color: var(--navy); display: flex; align-items: center; justify-content: center; transition: background 0.1s; font-weight: 600; }
+  .counter button:hover { background: var(--navy-bg); border-color: var(--navy); }
+  .cval { font-size: 18px; font-weight: 700; min-width: 30px; text-align: center; color: var(--navy); }
+
+  /* Tags */
+  .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 7px; }
+  .tag { font-size: 13px; padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border); cursor: pointer; background: var(--white); color: var(--muted); transition: all 0.12s; user-select: none; font-weight: 500; }
+  .tag:hover { border-color: var(--navy); color: var(--navy); }
+  .tag.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  /* Yes/No */
+  .yn { display: flex; gap: 10px; margin-top: 7px; }
+  .yn button { flex: 1; padding: 9px; font-size: 14px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--white); cursor: pointer; font-family: inherit; color: var(--muted); transition: all 0.12s; font-weight: 500; }
+  .yn button.yes.on { background: #ecfdf5; border-color: #6ee7b7; color: #065f46; }
+  .yn button.no.on  { background: var(--navy-bg); border-color: var(--navy); color: var(--navy); }
+
+  /* Person cards */
+  .person-card { border: 1.5px solid var(--border); border-radius: 10px; margin-bottom: 12px; overflow: hidden; }
+  .person-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--navy-bg); cursor: pointer; }
+  .person-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--navy); color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .person-name { font-size: 15px; font-weight: 600; flex: 1; color: var(--navy); }
+  .person-summary { font-size: 13px; color: var(--muted); flex: 2; }
+  .person-controls { display: flex; gap: 4px; flex-shrink: 0; }
+  .icon-btn { background: none; border: none; cursor: pointer; color: #bbb; font-size: 20px; line-height: 1; padding: 2px 5px; }
+  .icon-btn:hover { color: var(--navy); }
+  .person-body { padding: 16px; border-top: 1.5px solid var(--border); display: none; }
+  .person-body.open { display: block; }
+
+  /* Sub-label inside person cards */
+  .sub-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--navy); margin: 14px 0 8px; border-bottom: 1px solid var(--navy-bg); padding-bottom: 5px; }
+  .sub-label:first-child { margin-top: 0; }
+
+  /* File attachment */
+  .file-drop { border: 2px dashed var(--border); border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: border-color 0.15s; background: #fafbfc; }
+  .file-drop:hover { border-color: var(--navy); }
+  .file-drop p { font-size: 14px; color: var(--muted); margin-bottom: 6px; }
+  .file-drop .browse { font-size: 14px; color: var(--navy); font-weight: 600; text-decoration: underline; cursor: pointer; }
+  .file-list { margin-top: 12px; display: flex; flex-direction: column; gap: 7px; }
+  .file-item { display: flex; align-items: center; gap: 9px; font-size: 14px; padding: 8px 12px; background: var(--navy-bg); border-radius: 8px; border: 1px solid var(--border); }
+  .file-item span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--navy); font-weight: 500; }
+  .file-item .fsz { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+  .file-item button { background: none; border: none; cursor: pointer; color: #bbb; font-size: 17px; line-height: 1; padding: 0; flex-shrink: 0; }
+  .file-item button:hover { color: var(--navy); }
+
+  /* Meeting detail fields */
+  .meeting-notes { margin-top: 12px; }
+
+  /* Generate */
+  .btn-generate { width: 100%; padding: 15px; font-size: 16px; font-weight: 700; border: none; border-radius: 12px; background: var(--navy); color: #fff; cursor: pointer; font-family: inherit; margin-top: 0.5rem; transition: opacity 0.15s; letter-spacing: 0.02em; }
+  .btn-generate:hover { opacity: 0.88; }
+
+  /* Modal */
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
+  .modal-bg.open { display: flex; }
+  .modal { background: #fff; border-radius: 14px; padding: 1.75rem; max-width: 660px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; gap: 14px; }
+  .modal h2 { font-size: 18px; font-weight: 700; color: var(--navy); }
+  .modal-note { font-size: 13px; color: var(--muted); }
+  .modal pre { font-family: "Courier New", monospace; font-size: 12.5px; line-height: 1.8; white-space: pre-wrap; background: var(--navy-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; overflow-y: auto; flex: 1; max-height: 48vh; color: var(--text); }
+  .modal-actions { display: flex; gap: 10px; }
+  .btn-copy { padding: 11px 18px; font-size: 15px; font-weight: 600; border: 1.5px solid var(--border); border-radius: 8px; background: #fff; cursor: pointer; font-family: inherit; color: var(--navy); transition: background 0.1s; }
+  .btn-copy:hover { background: var(--navy-bg); }
+  .btn-close { padding: 11px 20px; font-size: 15px; border: 1.5px solid var(--border); border-radius: 8px; background: #fff; cursor: pointer; font-family: inherit; color: var(--muted); font-weight: 500; }
+  .copy-ok { font-size: 13px; color: #065f46; display: none; align-items: center; gap: 5px; font-weight: 500; }
+  .copy-ok.show { display: flex; }
+  .btn-send { flex: 1; padding: 11px; font-size: 15px; font-weight: 700; border: none; border-radius: 8px; background: #16a34a; color: #fff; cursor: pointer; font-family: inherit; transition: opacity 0.15s; }
+  .btn-send:hover { opacity: 0.88; }
+  .send-note { font-size: 12px; color: #16a34a; display: none; align-items: center; gap: 5px; font-weight: 500; }
+  .send-note.show { display: flex; }
+  input[type="email"] { font-size: 14px; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--white); color: var(--text); font-family: inherit; outline: none; min-width: 220px; }
+  input[type="email"]:focus { border-color: var(--navy); }
+
+  /* Startup status bar */
+  .status-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 1rem; }
+  .status-bar > label { font-size: 13px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+  .status-tag { font-size: 13px; font-weight: 600; padding: 6px 16px; border-radius: 20px; border: 1.5px solid var(--border); cursor: pointer; background: var(--white); color: var(--muted); transition: all 0.12s; user-select: none; }
+  .status-tag:hover { border-color: var(--navy); color: var(--navy); }
+  .status-tag.on-track.on   { background: #16a34a; color: #fff; border-color: #16a34a; }
+  .status-tag.slight.on     { background: #ca8a04; color: #fff; border-color: #ca8a04; }
+  .status-tag.behind.on     { background: #dc2626; color: #fff; border-color: #dc2626; }
+  .status-tag.blocked.on    { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+
+  /* Role badge inside person cards */
+  .role-badge { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 3px 10px; border-radius: 12px; border: 1.5px solid var(--border); cursor: pointer; background: var(--white); color: var(--muted); transition: all 0.12s; user-select: none; }
+  .role-badge:hover { border-color: var(--navy); color: var(--navy); }
+  .role-badge.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .role-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; align-items: center; }
+  .role-row > span { font-size: 12px; color: var(--muted); font-weight: 500; margin-right: 4px; }
+  input[type="number"] { font-size: 15px; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; background: #fafbfc; color: var(--text); font-family: inherit; outline: none; width: 80px; text-align: center; }
+  input[type="number"]:focus { border-color: var(--navy); background: var(--white); }
+
+  @media (max-width: 540px) {
+    .site-header { flex-direction: column; gap: 10px; text-align: center; }
+    .grid2 { grid-template-columns: 1fr; }
+    .meta-row { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<div class="site-header">
+  <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDI3LjcuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IgoJIHZpZXdCb3g9IjAgMCAzNzUuMiAxNjkuOCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMzc1LjIgMTY5Ljg7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPHN0eWxlIHR5cGU9InRleHQvY3NzIj4KCS5zdDB7ZmlsbC1ydWxlOmV2ZW5vZGQ7Y2xpcC1ydWxlOmV2ZW5vZGQ7fQoJLnN0MXtmaWxsOiMwMDNBNUQ7fQoJLnN0MntmaWxsOiNGRkZGRkY7fQoJLnN0M3tmaWxsOiNCNkI5QkY7fQo8L3N0eWxlPgo8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMTkzLjIsNjQuMkwxODMsMTEyaDEzLjZsNy4zLTM0LjFjMC41LTIuNSwyLjEtMy44LDQuNS0zLjljMi42LTAuMiwzLjEsMS43LDIuOCwzLjlsLTcuMywzNC4xaDEzLjZsOC4zLTM5LjIKCWMxLjQtNi41LTMuNi0xMC0xMC0xMGMtNC4zLDAtOSwzLjctMTEsNy4zaC0wLjJsMS4zLTZMMTkzLjIsNjQuMkwxOTMuMiw2NC4yeiIvPgo8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMjYxLjIsNzguNGMyLjgtMTAuNi00LjEtMTUuNS0xNC0xNS41Yy05LjUsMC0xOC42LDQuNC0yMC44LDE0LjhjLTAuNywzLjUtMC4yLDYuMywxLjUsOQoJYzMuMiw0LjksMTAuNCw2LjksMTUuMiw5LjhjMC45LDAuOSwxLjMsMi4yLDEsMy43Yy0wLjcsMy4xLTIuOSw0LjUtNS44LDQuNWMtNC4xLDAtNC4yLTMuOC0zLjMtNy4yaC0xM2MtMywxMS41LDMuNiwxNi4xLDE0LjMsMTYuMQoJYzEwLDAsMTkuMS00LjUsMjEuMy0xNS4yQzI2MCw4NywyNTEsODQuNywyNDMuMSw4MC43Yy0xLjgtMS0zLjctMi4zLTMuMS00LjljMC42LTIuOCwyLjctNCw1LjQtNGM0LjQsMCwzLjUsMy4zLDMuMSw2LjZMMjYxLjIsNzguNAoJTDI2MS4yLDc4LjR6Ii8+CjxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0yNjkuMSw3NGwtNS45LDI3LjdjLTEuNSw3LjMsMS43LDExLDksMTFjMywwLDUuOS0wLjMsOC45LTAuOGwyLTkuNmMtMS41LDAtMS45LTAuMS0zLjUsMC4yCgljLTEuOCwwLTIuOS0wLjYtMi4zLTMuM2w1LjQtMjUuMmg2LjVsMi4xLTkuOGgtNi41bDIuOS0xMy43aC0xMy42bC0yLjksMTMuN2gtNS40bC0yLjEsOS44TDI2OS4xLDc0TDI2OS4xLDc0eiIvPgo8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMjk0LjQsNjQuMkwyODQuMiwxMTJoMTMuNmw2LjMtMjkuNGMxLjEtMy45LDIuOC00LjcsNi42LTQuN2MxLjQsMCwyLjcsMC4xLDQsMC4zbDMuMy0xNS40CgljLTUuNiwwLTkuNywzLjUtMTIuMyw4LjZoLTAuMmwxLjUtNy4zTDI5NC40LDY0LjJMMjk0LjQsNjQuMnoiLz4KPHBhdGggY2xhc3M9InN0MCIgZD0iTTMzMy43LDY0LjJIMzIwbDAuMyw0My4zYzAsMi4yLDAuMyw1LjktMC4yLDguMWMtMC40LDEuOS0zLjIsMi42LTQuNiwyLjRjLTAuOC0wLjItMS43LTAuMy0yLjYtMC4zbC0yLjEsMTAuMQoJYzEuNCwwLDIuOSwwLjQsNS4zLDAuNGMxNC45LDAsMTYuOS0xMC4xLDIzLjEtMjNsMTcuMy00MC45aC0xMy4zbC0xMS4zLDMwLjloLTAuMkwzMzMuNyw2NC4yTDMzMy43LDY0LjJ6Ii8+CjxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0xNzguNSwxMTJsMTAuMi00Ny44aC0xMy42TDE2NSwxMTJIMTc4LjVMMTc4LjUsMTEyeiBNMTg5LjcsNTkuNWwyLjUtMTEuNWgtMTMuNmwtMi41LDExLjVIMTg5LjdMMTg5LjcsNTkuNXoiCgkvPgo8Zz4KCTxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik05MC4yLDEzNy44Yy0wLjgsMC0xLjIsMC42LTEuMywxLjRsLTEuMSw1LjNjLTAuMSwwLjcsMC4xLDEsMC44LDFjMC43LDAsMS4xLTAuNCwxLjMtMWwxLjEtNS4zCgkJQzkxLjEsMTM4LjQsOTEsMTM3LjgsOTAuMiwxMzcuOHoiLz4KCTxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik0xMzYuOSwxMzcuNmMtMSwwLTEuNCwwLjgtMS41LDEuNmwtMC4yLDAuOGgyLjNsMC4yLTEuMkMxMzcuOSwxMzguNCwxMzcuNywxMzcuNiwxMzYuOSwxMzcuNnoiLz4KCTxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik0xNjIuMyw1Ny41bC0xMS43LDE4LjdsNi45LDM1LjhoLTE1LjlsLTMuNS0yMi4zbC00LjcsNi41TDEzMCwxMTJoLTE1bDEzLjYtNjRoMTVsLTUuNCwyNS42aDAuMkwxNTQsNDcuOWg0LjIKCQlDMTQ0LjcsMjEuMywxMTcuMSwzLDg1LjIsM0M0MCwzLDMuMywzOS42LDMuMyw4NC44czM2LjYsODEuOCw4MS44LDgxLjhTMTY3LDEzMCwxNjcsODQuOEMxNjcsNzUuMywxNjUuMyw2Ni4xLDE2Mi4zLDU3LjV6CgkJIE0xMDQuNyw2Mi44YzEzLjQsMC4yLDE3LjQsNiwxMy45LDE5LjFoLTEyLjhsMC4xLTAuOWMwLjEtMS44LDAuNi0zLjcsMC42LTUuNWMtMC4yLTItMS0zLTMtM2MtMy41LDAtNC43LDIuNy01LjMsNS44TDk0LDk4LjIKCQljLTAuNiwzLTAuMyw1LjUsMy4yLDUuNWM1LDAsNS44LTcuNSw2LjUtMTEuMWgxMy4xYy0wLjYsMi44LTIuMiw4LjgtMy41LDExLjRjLTMuMSw2LTguOCw4LjctMTQuOCw5LjNjLTEuMywwLjEtMi41LDAuMy00LjYsMC4zCgkJYy05LjcsMC0xNi0zLjktMTMuNy0xNC45bDQuMS0xOS41Qzg3LDY2LjksOTQuMiw2Mi44LDEwNC43LDYyLjh6IE03Mi44LDYxLjhMNTEuNiwxMTJINDAuNGwwLjMtNTAuMmgtMC4yTDMxLjMsMTEySDE3bDEzLjYtNjQKCQloMjEuMmwtMC4zLDM3LjhoMC4ybDE2LTM3LjhoMjFsLTEzLjYsNjRINjAuOEw3Myw2MS44SDcyLjh6IE04Mi44LDE0MC45aC00LjdsLTEuNCw2LjhoLTMuOGwzLjQtMTZoOC44bC0wLjcsMy4yaC01LjFsLTAuNiwyLjgKCQloNC43TDgyLjgsMTQwLjl6IE05NC4zLDEzOS40bC0xLDQuOWMtMC43LDIuNy0yLjYsMy43LTUuMiwzLjdjLTIuNCwwLTQuMi0xLTMuNi0zLjdsMS00LjljMC43LTMuMSwyLjctNC4xLDUuMy00LjEKCQlDOTMuNywxMzUuNCw5NC44LDEzNi44LDk0LjMsMTM5LjR6IE0xMDIuNCwxMzkuMmMtMC4zLTAuMS0wLjctMC4xLTEtMC4xYy0xLDAtMS40LDAuMi0xLjcsMS4ybC0xLjYsNy40aC0zLjRsMi41LTExLjloMy4yCgkJbC0wLjQsMS44bDAsMGMwLjctMS4zLDEuNy0yLjIsMy4xLTIuMkwxMDIuNCwxMzkuMnogTTExNC4zLDE0Ny42aC0zLjhsMi43LTEyLjhoLTIuOWwwLjctMy4yaDkuN2wtMC43LDMuMmgtM0wxMTQuMywxNDcuNnoKCQkgTTEzMCwxMzguMWwtMiw5LjZoLTMuNGwxLjgtOC41YzAuMS0wLjcsMC0xLTAuNy0xcy0xLjEsMC43LTEuMiwxLjNsLTEuOCw4LjNoLTMuNGwzLjQtMTZoMy40bC0xLjEsNWwwLDBjMS0xLDEuOS0xLjMsMi45LTEuMwoJCUMxMjkuNSwxMzUuNCwxMzAuMywxMzYuNSwxMzAsMTM4LjF6IE0xNDEuMiwxMzguOGwtMC43LDMuNGgtNS43bC0wLjQsMi4xYy0wLjEsMC43LDAsMS4yLDAuOCwxLjNjMS4yLDAuMSwxLjQtMS4xLDEuNi0yLjFoMy40CgkJYy0wLjUsMy4xLTIuNCw0LjUtNS40LDQuNWMtMi40LDAtNC40LTEtMy44LTMuN2wxLTQuOWMwLjctMy4xLDIuOC00LjEsNS40LTQuMUMxMzkuNywxMzUuMywxNDEuNywxMzYuMiwxNDEuMiwxMzguOHoiLz4KPC9nPgo8cG9seWdvbiBjbGFzcz0ic3QwIiBwb2ludHM9IjE1Ny43LDE0Ny42IDE1OC40LDE0NC40IDE1My44LDE0NC40IDE1Ni41LDEzMS42IDE1Mi44LDEzMS42IDE0OS40LDE0Ny42ICIvPgo8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMTYzLjEsMTQ3LjZsMi41LTExLjloLTMuNGwtMi41LDExLjlIMTYzLjFMMTYzLjEsMTQ3LjZ6IE0xNjUuOSwxMzQuNWwwLjYtMi45aC0zLjRsLTAuNiwyLjlIMTY1LjkKCUwxNjUuOSwxMzQuNXoiLz4KPHBhdGggY2xhc3M9InN0MCIgZD0iTTE2Ni42LDE0Ny42aDMuNGwyLTkuNWgxLjVsMC41LTIuNWgtMS41bDAuMy0xLjJjMC4xLTAuMywwLjQtMC40LDAuOC0wLjRoMC43bDAuNS0yLjVoLTEuNWMtMi4yLDAtMy41LDAuNy00LDMKCWwtMC4yLDFoLTEuM2wtMC41LDIuNWgxLjRMMTY2LjYsMTQ3LjZMMTY2LjYsMTQ3LjZ6Ii8+CjxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0xNzguMiwxNDBsMC4yLTAuOGMwLjItMC44LDAuNi0xLjYsMS41LTEuNnMxLDAuOCwwLjksMS4ybC0wLjIsMS4yTDE3OC4yLDE0MEwxNzguMiwxNDB6IE0xODMuNCwxNDIuMmwwLjctMy40CgljMC41LTIuNi0xLjUtMy41LTMuOC0zLjVjLTIuNiwwLTQuOCwxLTUuNCw0LjFsLTEsNC45Yy0wLjYsMi43LDEuMywzLjcsMy44LDMuN2MzLDAsNC45LTEuNCw1LjQtNC41aC0zLjRjLTAuMywxLTAuNCwyLjEtMS42LDIuMQoJYy0wLjcsMC0wLjktMC42LTAuOC0xLjNsMC40LTIuMUgxODMuNEwxODMuNCwxNDIuMnoiLz4KPHBhdGggY2xhc3M9InN0MCIgZD0iTTE5Ny41LDE0Mi45Yy0wLjIsMC45LTAuNiwyLjMtMS44LDIuM3MtMS4xLTEuNC0wLjktMi4zbDEuNC02LjZjMC4yLTEsMC42LTIuMiwxLjgtMi4yczEuMSwxLjIsMC45LDIuMgoJTDE5Ny41LDE0Mi45TDE5Ny41LDE0Mi45eiBNMjAyLjcsMTM2YzAuNy0zLjEtMC44LTQuOC00LTQuOGMtMy4zLDAtNS41LDEuNy02LjEsNC44bC0xLjQsNi41Yy0wLjgsMy42LDAuMiw1LjUsNCw1LjUKCXM1LjUtMS45LDYuMi01LjVMMjAyLjcsMTM2TDIwMi43LDEzNnoiLz4KPHBhdGggY2xhc3M9InN0MCIgZD0iTTIwMy4zLDE0Ny42aDMuNGwyLTkuNWgxLjVsMC41LTIuNWgtMS41bDAuMy0xLjJjMC4xLTAuMywwLjQtMC40LDAuOC0wLjRoMC43bDAuNS0yLjVIMjEwYy0yLjIsMC0zLjUsMC43LTQsMwoJbC0wLjIsMWgtMS4zTDIwNCwxMzhoMS40TDIwMy4zLDE0Ny42TDIwMy4zLDE0Ny42eiIvPgo8cG9seWdvbiBjbGFzcz0ic3QwIiBwb2ludHM9IjIyMi4yLDEzMS42IDIxOC40LDEzMS42IDIyMC4yLDE0MC45IDIxOC44LDE0Ny42IDIyMi41LDE0Ny42IDIyNCwxNDAuOSAyMjkuOCwxMzEuNiAyMjYsMTMxLjYgCgkyMjMsMTM2LjkgMjIzLDEzNi45ICIvPgo8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMjI2LjMsMTQ0LjNjLTAuNiwyLjcsMS4yLDMuNywzLjYsMy43YzIuNiwwLDQuNS0xLDUuMi0zLjdsMS00LjljMC42LTIuNy0wLjYtNC4xLTMuNi00LjEKCWMtMi42LDAtNC43LDEtNS4zLDQuMUwyMjYuMywxNDQuM0wyMjYuMywxNDQuM3ogTTIzMC44LDEzOS4yYzAuMi0wLjgsMC42LTEuNCwxLjMtMS40YzAuOCwwLDAuOSwwLjYsMC44LDEuNGwtMS4xLDUuMwoJYy0wLjIsMC43LTAuNiwxLTEuMywxcy0wLjktMC40LTAuOC0xTDIzMC44LDEzOS4yTDIzMC44LDEzOS4yeiIvPgo8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMjQ1LjQsMTQ3LjZsMi41LTExLjloLTMuNGwtMS44LDguNmMtMC4xLDAuNi0wLjYsMS0xLjIsMWMtMC42LDAtMC43LTAuNC0wLjYtMWwxLjgtOC42aC0zLjRsLTIuMSw5LjgKCWMtMC4zLDEuNiwwLjUsMi41LDIuNSwyLjVjMS4xLDAsMi4yLTAuOSwyLjgtMS45bDAsMGwtMC4zLDEuNUwyNDUuNCwxNDcuNkwyNDUuNCwxNDcuNnoiLz4KPHBhdGggY2xhc3M9InN0MCIgZD0iTTI1MC4zLDEzNS43bC0yLjUsMTEuOWgzLjRsMS42LTcuNGMwLjMtMSwwLjctMS4yLDEuNy0xLjJjMC4zLDAsMC43LDAsMSwwLjFsMC44LTMuOGMtMS40LDAtMi40LDAuOS0zLjEsMi4yCglsMCwwbDAuNC0xLjhIMjUwLjNMMjUwLjMsMTM1Ljd6Ii8+CjxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0yNjYuMywxNDAuOGMxLjYsMC4xLDIuNywwLDIuMywxLjljLTAuNSwyLjItMS4yLDItMy4xLDIuMUwyNjYuMywxNDAuOEwyNjYuMywxNDAuOHogTTI2Ny43LDEzNC41CgljMS4zLDAsMi40LTAuMSwyLjEsMS41Yy0wLjQsMS45LTEuMSwxLjgtMi44LDEuOUwyNjcuNywxMzQuNUwyNjcuNywxMzQuNXogTTI2Ni40LDE0Ny42YzMuMSwwLDUuMi0xLjQsNS45LTQuNgoJYzAuNC0yLDAuMi0yLjgtMS4zLTMuOGwwLDBjMS40LTAuNywyLjItMiwyLjUtMy40YzAuNy0zLjItMS4zLTQuMS00LjItNC4xaC00LjlsLTMuNCwxNkwyNjYuNCwxNDcuNkwyNjYuNCwxNDcuNnoiLz4KPHBhdGggY2xhc3M9InN0MCIgZD0iTTI4Mi4xLDE0Ny42bDIuNS0xMS45aC0zLjRsLTEuOCw4LjZjLTAuMSwwLjYtMC42LDEtMS4yLDFzLTAuNy0wLjQtMC42LTFsMS44LTguNkgyNzZsLTIuMSw5LjgKCWMtMC4zLDEuNiwwLjUsMi41LDIuNSwyLjVjMS4xLDAsMi4yLTAuOSwyLjgtMS45bDAsMGwtMC4zLDEuNUwyODIuMSwxNDcuNkwyODIuMSwxNDcuNnoiLz4KPHBhdGggY2xhc3M9InN0MCIgZD0iTTI4OC4yLDE0Ny42bDIuNS0xMS45aC0zLjRsLTIuNSwxMS45SDI4OC4yTDI4OC4yLDE0Ny42eiBNMjkxLDEzNC41bDAuNi0yLjloLTMuNGwtMC42LDIuOUgyOTFMMjkxLDEzNC41eiIvPgo8cG9seWdvbiBjbGFzcz0ic3QwIiBwb2ludHM9IjI5NC42LDE0Ny42IDI5OCwxMzEuNiAyOTQuNiwxMzEuNiAyOTEuMiwxNDcuNiAiLz4KPHBhdGggY2xhc3M9InN0MCIgZD0iTTMwMi4xLDE0MC4yYzAuMi0wLjgsMC40LTIuMSwxLjUtMi4xYzAuOCwwLDAuNywxLjIsMC41LDIuMmwtMC42LDIuOGMtMC4yLDEuMi0wLjYsMi4xLTEuNSwyLjEKCWMtMSwwLTAuNy0xLjItMC42LTEuOUwzMDIuMSwxNDAuMkwzMDIuMSwxNDAuMnogTTMwNiwxNDcuNmwzLjQtMTZIMzA2bC0xLjEsNS4xbDAsMGMtMC41LTEtMS4zLTEuNC0yLjItMS40Yy0yLjIsMC0zLjQsMi4yLTMuOCw0LjEKCWwtMC45LDQuMWMtMC40LDItMC40LDQuNCwyLDQuNGMxLDAsMi4yLTAuNiwzLTEuOGwwLDBsLTAuMywxLjRMMzA2LDE0Ny42TDMwNiwxNDcuNnoiLz4KPHBhdGggY2xhc3M9InN0MCIgZD0iTTMxMi4xLDE0Ny42bDIuNS0xMS45aC0zLjRsLTIuNSwxMS45SDMxMi4xTDMxMi4xLDE0Ny42eiBNMzE0LjgsMTM0LjVsMC42LTIuOUgzMTJsLTAuNiwyLjlIMzE0LjhMMzE0LjgsMTM0LjUKCXoiLz4KPHBhdGggY2xhc3M9InN0MCIgZD0iTTMxNy4zLDEzNS43bC0yLjUsMTEuOWgzLjRsMS44LTguNWMwLjEtMC42LDAuNS0xLDEuMS0xczAuOCwwLjQsMC43LDFsLTEuOCw4LjVoMy40bDIuMS05LjgKCWMwLjMtMS42LTAuOS0yLjUtMi41LTIuNWMtMS4xLDAtMi4yLDAuOS0yLjgsMS44bDAsMGwwLjMtMS41aC0zLjJWMTM1Ljd6Ii8+CjxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0zMzAuNywxMzkuOWMwLjEtMC42LDAuNC0xLjgsMS4zLTEuOHMwLjksMC44LDAuOCwxLjZsLTAuNywzLjNjLTAuMiwwLjctMC40LDEuNi0xLjQsMS42CgljLTAuOCwwLTAuOS0wLjYtMC43LTEuM0wzMzAuNywxMzkuOUwzMzAuNywxMzkuOXogTTMyNS41LDE0OC4zYy0wLjUsMi44LDEuMSwzLjQsMy42LDMuNHM0LjgtMSw1LjMtMy44bDIuNi0xMi4yaC0zLjJsLTAuMywxLjRsMCwwCgljLTAuMy0xLjItMS4xLTEuNy0yLjMtMS44Yy0yLjIsMC0zLjQsMi4yLTMuOCw0LjFsLTAuOSw0LjFjLTAuNCwxLjgsMC4xLDMuOCwyLjIsMy44YzAuOSwwLDEuOC0wLjUsMi43LTEuM2wwLDBsLTAuNSwyLjQKCWMtMC4yLDAuOC0wLjUsMC45LTEuMiwxYy0xLDAuMS0xLTAuMy0wLjktMS4xTDMyNS41LDE0OC4zTDMyNS41LDE0OC4zeiIvPgo8cGF0aCBjbGFzcz0ic3QyIiBkPSJNODAuMyw5OC43Yy0yLjMsMTAuOSwzLjksMTQuOSwxMy43LDE0LjljMiwwLDMuMy0wLjIsNC42LTAuM2M2LTAuNiwxMS43LTMuMywxNC44LTkuMwoJYzEuMy0yLjYsMi45LTguNSwzLjUtMTEuNGgtMTMuMWMtMC44LDMuNi0xLjUsMTEuMS02LjUsMTEuMWMtMy41LDAtMy44LTIuNi0zLjItNS41bDQuMi0xOS43YzAuNy0zLjEsMS44LTUuOCw1LjMtNS44CgljMiwwLDIuOSwxLDMsM2MwLDEuOC0wLjUsMy43LTAuNiw1LjVsLTAuMSwwLjloMTIuOGMzLjYtMTMuMS0wLjUtMTktMTMuOS0xOS4xYy0xMC41LDAtMTcuNyw0LjEtMjAuMywxNi40TDgwLjMsOTguN3oiLz4KPHBhdGggY2xhc3M9InN0MiIgZD0iTTEwMC4xLDEzNy41TDEwMC4xLDEzNy41bDAuMy0xLjhoLTMuMmwtMi41LDExLjloMy40bDEuNi03LjRjMC4zLTEsMC43LTEuMiwxLjctMS4yYzAuMywwLDAuNywwLDEsMC4xbDAuOC0zLjgKCUMxMDEuOCwxMzUuNCwxMDAuOCwxMzYuMiwxMDAuMSwxMzcuNXoiLz4KPHBhdGggY2xhc3M9InN0MiIgZD0iTTkwLjcsMTM1LjRjLTIuNiwwLTQuNywxLTUuMyw0LjFsLTEsNC45Yy0wLjYsMi43LDEuMiwzLjcsMy42LDMuN2MyLjYsMCw0LjUtMSw1LjItMy43bDEtNC45CglDOTQuOCwxMzYuOCw5My43LDEzNS40LDkwLjcsMTM1LjR6IE05MC45LDEzOS4ybC0xLjEsNS4zYy0wLjIsMC43LTAuNiwxLTEuMywxYy0wLjcsMC0wLjktMC40LTAuOC0xbDEuMS01LjMKCWMwLjItMC44LDAuNi0xLjQsMS4zLTEuNEM5MSwxMzcuOCw5MS4xLDEzOC40LDkwLjksMTM5LjJ6Ii8+Cjxwb2x5Z29uIGNsYXNzPSJzdDIiIHBvaW50cz0iNzkuNCwxMzQuOCA4NC41LDEzNC44IDg1LjIsMTMxLjYgNzYuMywxMzEuNiA3Mi45LDE0Ny42IDc2LjcsMTQ3LjYgNzguMSwxNDAuOSA4Mi44LDE0MC45IDgzLjUsMTM3LjcgCgk3OC44LDEzNy43ICIvPgo8cGF0aCBjbGFzcz0ic3QyIiBkPSJNMTM4LjMsNzMuNmgtMC4ybDUuNC0yNS42aC0xNUwxMTUsMTEyaDE1bDMuNC0xNS44bDQuNy02LjVsMy41LDIyLjNoMTUuOWwtNi45LTM1LjhsMTEuNy0xOC43CgljLTEuMi0zLjMtMi41LTYuNS00LjEtOS42SDE1NEwxMzguMyw3My42eiIvPgo8cG9seWdvbiBjbGFzcz0ic3QyIiBwb2ludHM9Ijc1LjEsMTEyIDg4LjcsNDggNjcuNyw0OCA1MS43LDg1LjggNTEuNSw4NS44IDUxLjgsNDggMzAuNiw0OCAxNywxMTIgMzEuMywxMTIgNDAuNiw2MS44IDQwLjcsNjEuOCAKCTQwLjQsMTEyIDUxLjYsMTEyIDcyLjgsNjEuOCA3Myw2MS44IDYwLjgsMTEyICIvPgo8cG9seWdvbiBjbGFzcz0ic3QyIiBwb2ludHM9IjEyMC43LDEzMS42IDExMSwxMzEuNiAxMTAuMywxMzQuOCAxMTMuMywxMzQuOCAxMTAuNiwxNDcuNiAxMTQuMywxNDcuNiAxMTcsMTM0LjggMTIwLjEsMTM0LjggIi8+CjxwYXRoIGNsYXNzPSJzdDIiIGQ9Ik0xMzcuMywxMzUuNGMtMi42LDAtNC44LDEtNS40LDQuMWwtMSw0LjljLTAuNiwyLjcsMS4zLDMuNywzLjgsMy43YzMsMCw0LjktMS40LDUuNC00LjVoLTMuNAoJYy0wLjMsMS0wLjQsMi4xLTEuNiwyLjFjLTAuNywwLTAuOS0wLjYtMC44LTEuM2wwLjQtMi4xaDUuN2wwLjctMy40QzE0MS43LDEzNi4yLDEzOS43LDEzNS4zLDEzNy4zLDEzNS40eiBNMTM3LjgsMTM4LjhsLTAuMiwxLjIKCWgtMi4zbDAuMi0wLjhjMC4yLTAuOCwwLjYtMS42LDEuNS0xLjZDMTM3LjcsMTM3LjYsMTM3LjksMTM4LjQsMTM3LjgsMTM4Ljh6Ii8+CjxwYXRoIGNsYXNzPSJzdDIiIGQ9Ik0xMjcuOCwxMzUuNGMtMSwwLTEuOSwwLjMtMi45LDEuM2wwLDBsMS4xLTVoLTMuNGwtMy40LDE2aDMuNGwxLjgtOC4zYzAuMS0wLjYsMC41LTEuMywxLjItMS4zCgljMC44LDAsMC45LDAuMywwLjcsMWwtMS44LDguNWgzLjRsMi05LjZDMTMwLjMsMTM2LjUsMTI5LjUsMTM1LjQsMTI3LjgsMTM1LjR6Ii8+CjxnPgoJPHBhdGggY2xhc3M9InN0MyIgZD0iTTM1OS42LDY5YzAtMi43LDIuMi00LjksNC45LTQuOWMyLjcsMCw0LjksMi4yLDQuOSw0LjljMCwyLjctMi4yLDQuOS00LjksNC45QzM2MS43LDczLjgsMzU5LjYsNzEuNiwzNTkuNiw2OQoJCXogTTM2OC41LDY5YzAtMi4yLTEuOC00LTQtNGMtMi4yLDAtNCwxLjgtNCw0YzAsMi4yLDEuOCw0LDQsNEMzNjYuNyw3MywzNjguNSw3MS4yLDM2OC41LDY5eiBNMzY0LjYsNjYuMmMxLjUsMCwyLjMsMC41LDIuMywxLjUKCQljMCwwLjgtMC40LDEuMy0xLjIsMS41bDEuMiwyLjVoLTEuMWwtMS4xLTIuM2gtMS4xdjIuM2gtMXYtNS41SDM2NC42eiBNMzYzLjUsNjguN2gxYzAuOSwwLDEuMy0wLjIsMS4zLTAuOGMwLTAuNy0wLjUtMC45LTEuNC0wLjkKCQloLTAuOVY2OC43eiIvPgo8L2c+Cjwvc3ZnPgo=" alt="McKinstry Logo" />
+  <h1>End of Day Report</h1>
+</div>
+
+<div class="page">
+
+  <!-- Date + Site -->
+  <div class="meta-row" style="margin-top:1.25rem;">
+    <label for="rdate">Report date</label>
+    <input type="date" id="rdate" />
+    <label>Site</label>
+    <div class="site-tags">
+      <div class="site-tag" onclick="setSite('RED2A',this)">RED2A</div>
+      <div class="site-tag" onclick="setSite('STY2',this)">STY2</div>
+      <div class="site-tag" onclick="setSite('STY4',this)">STY4</div>
+      <div class="site-tag" onclick="setSite('WMS1',this)">WMS1</div>
+      <div class="site-tag" onclick="setSite('WMS2',this)">WMS2</div>
+    </div>
+  </div>
+
+  <!-- Recipient email -->
+  <div class="meta-row" style="margin-bottom:1.5rem;">
+    <label for="recipient-email">Send report to</label>
+    <input type="email" id="recipient-email" placeholder="recipient@mckinstry.com" />
+  </div>
+
+  <!-- Startup Status -->
+  <div class="status-bar">
+    <label>Startup status</label>
+    <div id="status-tags" style="display:flex;flex-wrap:wrap;gap:7px;">
+      <div class="status-tag on-track"  onclick="setStatus('On Track', this)">&#10003; On Track</div>
+      <div class="status-tag slight"    onclick="setStatus('Slightly Behind', this)">&#9889; Slightly Behind</div>
+      <div class="status-tag behind"    onclick="setStatus('Behind', this)">&#9888; Behind</div>
+      <div class="status-tag blocked"   onclick="setStatus('Blocked', this)">&#9940; Blocked</div>
+    </div>
+  </div>
+
+  <!-- 1: Who is on-site -->
+  <div class="card">
+    <div class="card-title"><span class="num">1</span> Who is on-site — McKinstry team</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Select each person's role — the form will show only the fields relevant to their team.</p>
+    <div class="add-row field">
+      <input type="text" id="person-input" placeholder="Add team member name..." />
+      <button class="btn-sm" onclick="addPerson()">+ Add</button>
+    </div>
+    <div id="people-list"><p style="font-size:14px;color:#bbb;font-style:italic;">No team members added yet.</p></div>
+  </div>
+
+  <!-- 2: Checklists -->
+  <div class="card">
+    <div class="card-title"><span class="num">2</span> Checklists completed</div>
+    <div class="grid2">
+      <div class="field">
+        <label class="fl">ACC checklists</label>
+        <div class="counter">
+          <button onclick="chg('s2acc',-1)">&#8722;</button>
+          <span class="cval" id="s2acc">0</span>
+          <button onclick="chg('s2acc',1)">+</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="fl">Cx Alloy checklists</label>
+        <div class="counter">
+          <button onclick="chg('s2cxa',-1)">&#8722;</button>
+          <span class="cval" id="s2cxa">0</span>
+          <button onclick="chg('s2cxa',1)">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label class="fl">Notes (optional)</label>
+      <textarea id="s2notes" placeholder="Any details about what was checked or flagged..."></textarea>
+    </div>
+  </div>
+
+  <!-- 3: Service activities -->
+  <div class="card">
+    <div class="card-title"><span class="num">3</span> Service activities</div>
+    <div class="field">
+      <label class="fl">Activity type</label>
+      <div class="tags" id="s3act-tags">
+        <div class="tag" onclick="pickTag('s3act',this)">Resolving issues</div>
+        <div class="tag" onclick="pickTag('s3act',this)">Startup</div>
+        <div class="tag" onclick="pickTag('s3act',this)">Both</div>
+        <div class="tag" onclick="pickTag('s3act',this)">N/A</div>
+      </div>
+    </div>
+    <div class="field">
+      <label class="fl">Equipment worked on</label>
+      <textarea id="s3equip" placeholder="List equipment types or names..."></textarea>
+    </div>
+    <div class="field">
+      <label class="fl">Number of MCUs</label>
+      <div class="counter">
+        <button onclick="chg('s3mcu',-1)">&#8722;</button>
+        <span class="cval" id="s3mcu">0</span>
+        <button onclick="chg('s3mcu',1)">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4: Issues resolved -->
+  <div class="card">
+    <div class="card-title"><span class="num">4</span> Issues resolved</div>
+    <div class="field">
+      <label class="fl">Resolved in</label>
+      <div class="tags" id="s4plt-tags">
+        <div class="tag" onclick="pickTag('s4plt',this)">ACC</div>
+        <div class="tag" onclick="pickTag('s4plt',this)">Cx Alloy</div>
+        <div class="tag" onclick="pickTag('s4plt',this)">Both</div>
+        <div class="tag" onclick="pickTag('s4plt',this)">N/A</div>
+      </div>
+    </div>
+    <div class="field">
+      <label class="fl">Number of issues resolved</label>
+      <div class="counter">
+        <button onclick="chg('s4cnt',-1)">&#8722;</button>
+        <span class="cval" id="s4cnt">0</span>
+        <button onclick="chg('s4cnt',1)">+</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="fl">Issue details (optional)</label>
+      <textarea id="s4notes" placeholder="Describe the issues resolved..."></textarea>
+    </div>
+  </div>
+
+  <!-- 5: Meetings -->
+  <div class="card">
+    <div class="card-title"><span class="num">5</span> Meetings attended</div>
+    <div class="field">
+      <label class="fl">Did you attend any meetings today?</label>
+      <div class="yn">
+        <button class="yes" id="meet-yes" onclick="setMeeting(true)">Yes</button>
+        <button class="no"  id="meet-no"  onclick="setMeeting(false)">No</button>
+      </div>
+    </div>
+    <div id="meeting-section" style="display:none;">
+      <div class="add-row field">
+        <input type="text" id="meeting-input" placeholder="Meeting name or topic..." />
+        <button class="btn-sm" onclick="addMeeting()">+ Add</button>
+      </div>
+      <div class="chips" id="meeting-chips"></div>
+      <div class="meeting-notes">
+        <div class="field">
+          <label class="fl">Who attended?</label>
+          <input type="text" id="meet-attendees" placeholder="Names of attendees..." />
+        </div>
+        <div class="field">
+          <label class="fl">Key discussion points / outcomes</label>
+          <textarea id="meet-notes" placeholder="Summarize what was discussed or decided..."></textarea>
+        </div>
+        <div class="field">
+          <label class="fl">Action items</label>
+          <textarea id="meet-actions" placeholder="List any follow-up actions or next steps..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6: Blockers -->
+  <div class="card">
+    <div class="card-title"><span class="num">6</span> Blockers &amp; needs from management</div>
+    <div class="field">
+      <label class="fl">Is anything blocking progress today?</label>
+      <div class="yn">
+        <button class="yes" id="block-yes" onclick="setBlocker(true)">Yes</button>
+        <button class="no"  id="block-no"  onclick="setBlocker(false)">No</button>
+      </div>
+    </div>
+    <div id="blocker-section" style="display:none;">
+      <div class="field" style="margin-top:14px;">
+        <label class="fl">Describe the blocker</label>
+        <textarea id="blocker-desc" placeholder="What's blocking the team? (equipment, access, decisions, parts, personnel...)"></textarea>
+      </div>
+      <div class="field">
+        <label class="fl">What do you need from management to resolve it?</label>
+        <textarea id="blocker-need" placeholder="Specific action, contact, or resource needed..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7: Tomorrow's plan -->
+  <div class="card">
+    <div class="card-title"><span class="num">7</span> Tomorrow's planned tasks</div>
+    <div class="field">
+      <textarea id="tomorrow-plan" placeholder="What is the team planning to work on tomorrow? Key priorities, target equipment, or goals..." style="min-height:90px;"></textarea>
+    </div>
+  </div>
+
+  <!-- 8: Attachments -->
+  <div class="card">
+    <div class="card-title"><span class="num">8</span> Attachments</div>
+    <div class="file-drop" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+      <p>Drag &amp; drop files here, or</p>
+      <span class="browse">browse to select</span>
+      <input type="file" id="file-input" multiple style="display:none" onchange="handleFiles(this.files)" />
+    </div>
+    <div class="file-list" id="file-list"></div>
+  </div>
+
+  <button class="btn-generate" onclick="generateReport()">Generate Report Email</button>
+
+</div><!-- /.page -->
+
+<!-- Modal -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h2>Your EOD Report</h2>
+    <p class="modal-note">Click <strong>Send Email</strong> to open your email client with this report pre-filled — then just hit Send. Or copy and paste it manually.</p>
+    <pre id="report-out"></pre>
+    <div class="modal-actions">
+      <button class="btn-send" onclick="sendEmail()">&#9993; Send Email</button>
+      <button class="btn-copy" onclick="copyReport()">Copy</button>
+      <button class="btn-close" onclick="closeModal()">Close</button>
+    </div>
+    <div class="copy-ok" id="copy-ok">&#10003; Copied!</div>
+    <div class="send-note" id="send-note">&#10003; Opening your email client&hellip;</div>
+  </div>
+</div>
+
+<script>
+  const people = [], meetings = [], attachedFiles = [];
+  let meetingYes = null, selectedSite = null, startupStatus = null, blockerYes = null;
+  const tagState = { s3act: null, s4plt: null };
+  const counts = { s2acc:0, s2cxa:0, s3mcu:0, s4cnt:0 };
+
+  const t = new Date();
+  document.getElementById('rdate').value =
+    `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+
+  document.getElementById('person-input').addEventListener('keydown', e => { if(e.key==='Enter') addPerson(); });
+  document.getElementById('meeting-input').addEventListener('keydown', e => { if(e.key==='Enter') addMeeting(); });
+
+  function setSite(val, el) {
+    selectedSite = val;
+    document.querySelectorAll('.site-tag').forEach(t => t.classList.remove('on'));
+    el.classList.add('on');
+  }
+
+  function setStatus(val, el) {
+    startupStatus = val;
+    document.querySelectorAll('#status-tags .status-tag').forEach(t => t.classList.remove('on'));
+    el.classList.add('on');
+  }
+
+  function setBlocker(val) {
+    blockerYes = val;
+    document.getElementById('block-yes').classList.toggle('on', val);
+    document.getElementById('block-no').classList.toggle('on', !val);
+    document.getElementById('blocker-section').style.display = val ? 'block' : 'none';
+  }
+
+  function chg(key, delta) {
+    counts[key] = Math.max(0, counts[key] + delta);
+    document.getElementById(key).textContent = counts[key];
+  }
+
+  function pickTag(key, el) {
+    tagState[key] = el.textContent;
+    el.closest('.tags').querySelectorAll('.tag').forEach(t => t.classList.remove('on'));
+    el.classList.add('on');
+  }
+
+  function initials(n) { return n.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
+
+  function addPerson() {
+    const inp = document.getElementById('person-input');
+    const name = inp.value.trim();
+    if (!name) return;
+    const id = Date.now();
+    const p = { id, name, role: null, hours: 0, acc:0, cxa:0, activity:null, equipment:'', mcu:0, platform:null, issuesResolved:0, issueNotes:'' };
+    people.push(p);
+    inp.value = '';
+    const c = document.getElementById('people-list');
+    if (people.length === 1) c.innerHTML = '';  // clear empty-state message
+    const tmp = document.createElement('div');
+    tmp.innerHTML = buildPersonCard(p);
+    c.appendChild(tmp.firstElementChild);
+  }
+
+  function removePerson(id) {
+    const i = people.findIndex(p=>p.id===id);
+    if (i > -1) people.splice(i, 1);
+    const card = document.querySelector(`[data-person-id="${id}"]`);
+    if (card) card.remove();
+    if (!people.length) {
+      document.getElementById('people-list').innerHTML = '<p style="font-size:14px;color:#bbb;font-style:italic;">No team members added yet.</p>';
+    }
+  }
+
+  function togglePerson(id) {
+    const body = document.getElementById('pb-'+id);
+    const chev = document.getElementById('pc-'+id);
+    if (!body) return;
+    body.classList.toggle('open');
+    chev.textContent = body.classList.contains('open') ? '▲' : '▼';
+  }
+
+  function pChg(id, field, delta) {
+    const p = people.find(p=>p.id===id);
+    if (!p) return;
+    p[field] = Math.max(0, p[field]+delta);
+    const el = document.getElementById(`pv-${id}-${field}`);
+    if (el) el.textContent = p[field];
+    refreshSummary(id);
+  }
+
+  function pTag(id, field, val, el) {
+    const p = people.find(p=>p.id===id);
+    if (p) p[field] = val;
+    el.closest('.tags').querySelectorAll('.tag').forEach(t=>t.classList.remove('on'));
+    el.classList.add('on');
+    refreshSummary(id);
+  }
+
+  function pField(id, field, val) {
+    const p = people.find(p=>p.id===id);
+    if (p) p[field] = val;
+  }
+
+  function pRole(id, val, el) {
+    const p = people.find(p=>p.id===id);
+    if (p) p.role = val;
+    el.closest('.role-row').querySelectorAll('.role-badge').forEach(b=>b.classList.remove('on'));
+    el.classList.add('on');
+    // Show role-specific sections
+    const pb = document.getElementById('pb-'+id);
+    pb.querySelector('.fields-shared').style.display   = 'block';
+    pb.querySelector('.fields-comm').style.display     = val === 'Commissioning' ? 'block' : 'none';
+    pb.querySelector('.fields-startup').style.display  = val === 'Startup'       ? 'block' : 'none';
+    pb.querySelector('.fields-service').style.display  = val === 'Service'       ? 'block' : 'none';
+    refreshSummary(id);
+  }
+
+  function refreshSummary(id) {
+    const p = people.find(p=>p.id===id);
+    const el = document.getElementById('ps-'+id);
+    if (!p || !el) return;
+    const pts = [];
+    const icon = p.role === 'Commissioning' ? '📋' : p.role === 'Startup' ? '🚀' : p.role === 'Service' ? '🔧' : null;
+    if (icon) pts.push(icon + ' ' + (p.role || ''));
+    if (p.hours > 0) pts.push(p.hours + 'h');
+    if (p.role === 'Commissioning') {
+      const cl = p.acc + p.cxa;
+      if (cl > 0) pts.push(cl + ' checklist' + (cl !== 1 ? 's' : ''));
+      if (p.issuesResolved > 0) pts.push(p.issuesResolved + ' pushed');
+    } else if (p.role === 'Startup') {
+      if (p.activity && p.activity !== 'N/A') pts.push(p.activity.toLowerCase());
+      if (p.mcu > 0) pts.push(p.mcu + ' MCU' + (p.mcu !== 1 ? 's' : ''));
+    } else if (p.role === 'Service') {
+      if (p.activity && p.activity !== 'N/A') pts.push(p.activity.toLowerCase());
+      if (p.issuesResolved > 0) pts.push(p.issuesResolved + ' issue' + (p.issuesResolved !== 1 ? 's' : '') + ' resolved');
+    }
+    el.textContent = pts.length ? pts.join(' · ') : (p.role ? 'No activity logged' : 'Select a role below');
+  }
+
+  function buildPersonCard(p) {
+    const STARTUP_ACTS = ['Startup','Issue Resolution','Both','N/A'];
+    const SERVICE_ACTS = ['Issue Resolution','Startup','Both','N/A'];
+    const PLATS        = ['ACC','Cx Alloy','Both','N/A'];
+    return `
+      <div class="person-card" data-person-id="${p.id}">
+        <div class="person-header" onclick="togglePerson(${p.id})">
+          <div class="person-avatar">${initials(p.name)}</div>
+          <div class="person-name">${p.name}</div>
+          <div class="person-summary" id="ps-${p.id}">${p.role ? 'No activity logged' : 'Select a role below'}</div>
+          <div class="person-controls" onclick="event.stopPropagation()">
+            <button class="icon-btn" onclick="removePerson(${p.id})" title="Remove">&#10005;</button>
+            <button class="icon-btn" id="pc-${p.id}" onclick="togglePerson(${p.id})">&#9650;</button>
+          </div>
+        </div>
+        <div class="person-body open" id="pb-${p.id}">
+          <div class="role-row">
+            <span>Role</span>
+            <div class="role-badge${p.role==='Commissioning'?' on':''}" onclick="pRole(${p.id},'Commissioning',this)">📋 Commissioning</div>
+            <div class="role-badge${p.role==='Startup'?' on':''}"       onclick="pRole(${p.id},'Startup',this)">🚀 Startup</div>
+            <div class="role-badge${p.role==='Service'?' on':''}"        onclick="pRole(${p.id},'Service',this)">🔧 Service</div>
+          </div>
+          <div class="fields-shared" style="display:${p.role ? 'block' : 'none'}">
+            <div class="field" style="margin-bottom:16px;">
+              <label class="fl">Hours on-site</label>
+              <div class="counter">
+                <button onclick="pChg(${p.id},'hours',-1)">&#8722;</button>
+                <span class="cval" id="pv-${p.id}-hours">${p.hours||0}</span>
+                <button onclick="pChg(${p.id},'hours',1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="fields-comm" style="display:${p.role==='Commissioning' ? 'block' : 'none'}">
+            <p class="sub-label">Checklists completed</p>
+            <p style="font-size:12px;color:var(--muted);margin:-6px 0 10px;">Client issues → ACC &nbsp;|&nbsp; Internal issues found during startup → Cx Alloy</p>
+            <div class="grid2" style="margin-bottom:14px;">
+              <div class="field">
+                <label class="fl">ACC checklists</label>
+                <div class="counter">
+                  <button onclick="pChg(${p.id},'acc',-1)">&#8722;</button>
+                  <span class="cval" id="pv-${p.id}-acc">${p.acc||0}</span>
+                  <button onclick="pChg(${p.id},'acc',1)">+</button>
+                </div>
+              </div>
+              <div class="field">
+                <label class="fl">Cx Alloy checklists</label>
+                <div class="counter">
+                  <button onclick="pChg(${p.id},'cxa',-1)">&#8722;</button>
+                  <span class="cval" id="pv-${p.id}-cxa">${p.cxa||0}</span>
+                  <button onclick="pChg(${p.id},'cxa',1)">+</button>
+                </div>
+              </div>
+            </div>
+            <p class="sub-label">Issues pushed to resolution</p>
+            <div class="grid2">
+              <div class="field">
+                <label class="fl">Count</label>
+                <div class="counter">
+                  <button onclick="pChg(${p.id},'issuesResolved',-1)">&#8722;</button>
+                  <span class="cval" id="pv-${p.id}-issuesResolved">${p.issuesResolved||0}</span>
+                  <button onclick="pChg(${p.id},'issuesResolved',1)">+</button>
+                </div>
+              </div>
+              <div class="field">
+                <label class="fl">Notes</label>
+                <input type="text" placeholder="Any flags or blockers..." value="${p.issueNotes||''}" oninput="pField(${p.id},'issueNotes',this.value)" />
+              </div>
+            </div>
+          </div>
+          <div class="fields-startup" style="display:${p.role==='Startup' ? 'block' : 'none'}">
+            <p class="sub-label">Startup activity</p>
+            <div class="field">
+              <label class="fl">Activity type</label>
+              <div class="tags">${STARTUP_ACTS.map(a=>`<div class="tag${p.activity===a?' on':''}" onclick="pTag(${p.id},'activity','${a}',this)">${a}</div>`).join('')}</div>
+            </div>
+            <div class="grid2" style="margin-top:14px;">
+              <div class="field">
+                <label class="fl">Equipment worked on</label>
+                <input type="text" placeholder="Equipment type / name..." value="${p.equipment||''}" oninput="pField(${p.id},'equipment',this.value)" />
+              </div>
+              <div class="field">
+                <label class="fl">MCUs</label>
+                <div class="counter">
+                  <button onclick="pChg(${p.id},'mcu',-1)">&#8722;</button>
+                  <span class="cval" id="pv-${p.id}-mcu">${p.mcu||0}</span>
+                  <button onclick="pChg(${p.id},'mcu',1)">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="fields-service" style="display:${p.role==='Service' ? 'block' : 'none'}">
+            <p class="sub-label">Service activity</p>
+            <div class="field">
+              <label class="fl">Activity type</label>
+              <div class="tags">${SERVICE_ACTS.map(a=>`<div class="tag${p.activity===a?' on':''}" onclick="pTag(${p.id},'activity','${a}',this)">${a}</div>`).join('')}</div>
+            </div>
+            <div class="field" style="margin-top:14px;">
+              <label class="fl">Equipment worked on</label>
+              <input type="text" placeholder="Equipment type / name..." value="${p.equipment||''}" oninput="pField(${p.id},'equipment',this.value)" />
+            </div>
+            <p class="sub-label" style="margin-top:14px;">Issues resolved</p>
+            <div class="field">
+              <label class="fl">Resolved in</label>
+              <div class="tags">${PLATS.map(a=>`<div class="tag${p.platform===a?' on':''}" onclick="pTag(${p.id},'platform','${a}',this)">${a}</div>`).join('')}</div>
+            </div>
+            <div class="grid2" style="margin-top:14px;">
+              <div class="field">
+                <label class="fl">Count</label>
+                <div class="counter">
+                  <button onclick="pChg(${p.id},'issuesResolved',-1)">&#8722;</button>
+                  <span class="cval" id="pv-${p.id}-issuesResolved">${p.issuesResolved||0}</span>
+                  <button onclick="pChg(${p.id},'issuesResolved',1)">+</button>
+                </div>
+              </div>
+              <div class="field">
+                <label class="fl">Issue notes</label>
+                <input type="text" placeholder="Brief details..." value="${p.issueNotes||''}" oninput="pField(${p.id},'issueNotes',this.value)" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderPeople() {
+    const c = document.getElementById('people-list');
+    if (!people.length) {
+      c.innerHTML = '<p style="font-size:14px;color:#bbb;font-style:italic;">No team members added yet.</p>';
+      return;
+    }
+    c.innerHTML = people.map(p => buildPersonCard(p)).join('');
+  }
+  function setMeeting(val) {
+    meetingYes = val;
+    document.getElementById('meet-yes').classList.toggle('on', val);
+    document.getElementById('meet-no').classList.toggle('on', !val);
+    document.getElementById('meeting-section').style.display = val ? 'block' : 'none';
+  }
+
+  function addMeeting() {
+    const inp = document.getElementById('meeting-input');
+    const name = inp.value.trim();
+    if (!name) return;
+    meetings.push(name);
+    inp.value = '';
+    renderMeetings();
+  }
+
+  function renderMeetings() {
+    document.getElementById('meeting-chips').innerHTML =
+      meetings.map((m,i) => `<div class="chip">${m}<button onclick="meetings.splice(${i},1);renderMeetings()" title="Remove">&#10005;</button></div>`).join('');
+  }
+
+  function handleFiles(files) {
+    for (const f of files) { if (!attachedFiles.find(x=>x.name===f.name)) attachedFiles.push(f); }
+    renderFiles();
+  }
+
+  function handleDrop(e) { e.preventDefault(); handleFiles(e.dataTransfer.files); }
+
+  function removeFile(name) {
+    const i = attachedFiles.findIndex(f=>f.name===name);
+    if(i>-1) attachedFiles.splice(i,1);
+    renderFiles();
+  }
+
+  function fmtSize(b) {
+    if (b<1024) return b+'B';
+    if (b<1048576) return Math.round(b/1024)+'KB';
+    return (b/1048576).toFixed(1)+'MB';
+  }
+
+  function renderFiles() {
+    document.getElementById('file-list').innerHTML =
+      attachedFiles.map(f => `
+        <div class="file-item">
+          <span>&#128196; ${f.name}</span>
+          <span class="fsz">${fmtSize(f.size)}</span>
+          <button onclick="removeFile('${f.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">&#10005;</button>
+        </div>
+      `).join('');
+  }
+
+  function fmtDate(v) {
+    return new Date(v+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  }
+
+  function generateReport() {
+    const dateStr = document.getElementById('rdate').value ? fmtDate(document.getElementById('rdate').value) : 'Date not set';
+    const site    = selectedSite || 'Not selected';
+    const status  = startupStatus || 'Not specified';
+
+    const teamBlock = people.length
+      ? people.map(p => {
+          const role = p.role || 'Role not set';
+          const lines = [`  ${p.name}  [${role}]`, `    Hours on-site : ${p.hours || 0}h`];
+          if (p.role === 'Commissioning') {
+            const cl = (p.acc||0) + (p.cxa||0);
+            lines.push(`    ACC checklists   : ${p.acc||0}`);
+            lines.push(`    Cx Alloy checklists : ${p.cxa||0}`);
+            lines.push(`    Total checklists : ${cl}`);
+            lines.push(`    Issues pushed    : ${p.issuesResolved||0}`);
+            if (p.issueNotes) lines.push(`    Notes            : ${p.issueNotes}`);
+          } else if (p.role === 'Startup') {
+            lines.push(`    Activity  : ${p.activity || 'Not specified'}`);
+            lines.push(`    Equipment : ${p.equipment || 'Not specified'}`);
+            lines.push(`    MCUs      : ${p.mcu||0}`);
+          } else if (p.role === 'Service') {
+            lines.push(`    Activity          : ${p.activity || 'Not specified'}`);
+            lines.push(`    Equipment         : ${p.equipment || 'Not specified'}`);
+            lines.push(`    Issues resolved in: ${p.platform || 'Not specified'}  |  Count: ${p.issuesResolved||0}`);
+            if (p.issueNotes) lines.push(`    Notes             : ${p.issueNotes}`);
+          }
+          return lines.join('\n');
+        }).join('\n\n')
+      : '  No team members logged.';
+
+    const s2acc  = counts.s2acc, s2cxa = counts.s2cxa;
+    const s2notes = document.getElementById('s2notes').value.trim();
+    const s3act   = tagState.s3act || 'Not specified';
+    const s3equip = document.getElementById('s3equip').value.trim() || 'Not specified';
+    const s3mcu   = counts.s3mcu;
+    const s4plt   = tagState.s4plt || 'Not specified';
+    const s4cnt   = counts.s4cnt;
+    const s4notes = document.getElementById('s4notes').value.trim();
+
+    let meetStr = 'No';
+    if (meetingYes === null) { meetStr = 'Not specified'; }
+    else if (meetingYes) {
+      const mList  = meetings.length ? meetings.join(', ') : 'Yes (no meetings listed)';
+      const attend = document.getElementById('meet-attendees').value.trim();
+      const notes  = document.getElementById('meet-notes').value.trim();
+      const actions= document.getElementById('meet-actions').value.trim();
+      meetStr = mList;
+      if (attend)  meetStr += `\n  Attendees      : ${attend}`;
+      if (notes)   meetStr += `\n  Discussion     : ${notes}`;
+      if (actions) meetStr += `\n  Action items   : ${actions}`;
+    }
+
+    let blockerStr = 'No';
+    if (blockerYes === null) { blockerStr = 'Not specified'; }
+    else if (blockerYes) {
+      const desc = document.getElementById('blocker-desc').value.trim();
+      const need = document.getElementById('blocker-need').value.trim();
+      blockerStr = desc || 'Yes (no description provided)';
+      if (need) blockerStr += `\n  Needs from mgmt : ${need}`;
+    }
+
+    const tomorrowPlan = document.getElementById('tomorrow-plan').value.trim() || 'Not specified';
+
+    const fileBlock = attachedFiles.length
+      ? attachedFiles.map(f=>`  - ${f.name} (${fmtSize(f.size)})`).join('\n')
+      : '  None';
+
+    document.getElementById('report-out').textContent =
+`Subject: EOD Report — ${site} — ${dateStr}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+END OF DAY REPORT  |  McKinstry
+Site: ${site}
+Date: ${dateStr}
+Startup Status: ${status}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[1] WHO IS ON-SITE
+${teamBlock}
+
+─────────────────────────────────────
+[2] CHECKLISTS COMPLETED
+  ACC checklists   : ${s2acc}
+  Cx Alloy         : ${s2cxa}
+  Total            : ${s2acc+s2cxa}${s2notes?'\n  Notes            : '+s2notes:''}
+
+─────────────────────────────────────
+[3] SERVICE ACTIVITIES
+  Activity type    : ${s3act}
+  Equipment        : ${s3equip}
+  MCUs             : ${s3mcu}
+
+─────────────────────────────────────
+[4] ISSUES RESOLVED
+  Platform         : ${s4plt}
+  Count            : ${s4cnt}${s4notes?'\n  Details          : '+s4notes:''}
+
+─────────────────────────────────────
+[5] MEETINGS ATTENDED
+  ${meetStr}
+
+─────────────────────────────────────
+[6] BLOCKERS & NEEDS FROM MANAGEMENT
+  ${blockerStr}
+
+─────────────────────────────────────
+[7] TOMORROW'S PLAN
+  ${tomorrowPlan}
+
+─────────────────────────────────────
+[8] ATTACHMENTS
+${fileBlock}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+    document.getElementById('modal').classList.add('open');
+    document.getElementById('copy-ok').classList.remove('show');
+  }
+
+  function copyReport() {
+    navigator.clipboard.writeText(document.getElementById('report-out').textContent)
+      .then(() => document.getElementById('copy-ok').classList.add('show'));
+  }
+
+  function sendEmail() {
+    const reportText = document.getElementById('report-out').textContent;
+    const lines = reportText.split('\n');
+    // First line is "Subject: EOD Report — ..."
+    const subjectLine = lines[0].startsWith('Subject: ') ? lines[0].slice(9) : lines[0];
+    // Body is everything after the subject line
+    const bodyText = lines.slice(1).join('\n').trim();
+    const to = (document.getElementById('recipient-email').value || '').trim();
+    const mailtoUrl = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(bodyText)}`;
+    document.getElementById('send-note').classList.add('show');
+    document.getElementById('copy-ok').classList.remove('show');
+    window.location.href = mailtoUrl;
+  }
+
+  function closeModal() { document.getElementById('modal').classList.remove('open'); }
+  document.getElementById('modal').addEventListener('click', function(e) { if(e.target===this) closeModal(); });
+</script>
+</body>
+</html>
